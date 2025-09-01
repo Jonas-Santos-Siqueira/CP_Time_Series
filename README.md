@@ -73,7 +73,7 @@ print(res.summary())
 
 ---
 
-## Opção A — VAR (statsmodels) + EnbPI com **Moving Block Bootstrap** ✅
+## VAR (statsmodels) + EnbPI com **Moving Block Bootstrap** ✅
 
 Use o adaptador **`StatsmodelsVARAdapter`** para plugar um `VAR(p)` no EnbPI.  
 O adaptador recebe a série **contígua** `Y_full` (treino), a ordem `p` e `target_idx` (qual variável prever).  
