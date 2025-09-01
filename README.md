@@ -39,7 +39,7 @@ from enbpi import EnbPIModel
 
 ---
 
-## Quick start (univariado, qualquer regressor)
+## Quick start (qualquer regressor)
 
 ```python
 import numpy as np
@@ -73,7 +73,7 @@ print(res.summary())
 
 ---
 
-## Opção A — **VAR (statsmodels) + EnbPI com **Moving Block Bootstrap** ✅
+## Opção A — VAR (statsmodels) + EnbPI com **Moving Block Bootstrap** ✅
 
 Use o adaptador **`StatsmodelsVARAdapter`** para plugar um `VAR(p)` no EnbPI.  
 O adaptador recebe a série **contígua** `Y_full` (treino), a ordem `p` e `target_idx` (qual variável prever).  
@@ -121,30 +121,6 @@ print(res.summary())
 
 ---
 
-## Opção B — OLS do statsmodels por equação (wrapper)
-
-Se preferir estimar a equação do alvo por OLS explicitamente:
-```python
-from enbpi import EnbPIModel, StatsmodelsOLSRegressor
-
-base = StatsmodelsOLSRegressor(fit_intercept=True)
-model = EnbPIModel(base, B=30, alpha=0.1,
-                   aggregation="median", center="loo_quantile",
-                   bootstrap="block", block_length=20, random_state=123)
-```
-
----
-
-## Dicas de modelagem & diagnóstico
-
-- **`B` (nº de modelos):** 20–50 costuma ser suficiente.  
-- **`bootstrap` & `block_length`:** use `bootstrap="block"` quando `X` deriva de lags; `block_length` entre 10–50 é um bom ponto de partida (ajuste via validação).  
-- **`center`:** `loo_quantile` tende a ser mais **robusto** em séries com assimetria ou preditivos instáveis; `phi` (média/mediana) é o **centro pontual** clássico.  
-- **`window_size`:** janela deslizante para resíduos; menor janela → **mais reatividade** (bom para drift), maior janela → **mais estabilidade**.  
-- **Cobertura empírica:** verifique `results.summary()`; para inspeção visual, use `results.plot_interval()` e verifique pontos fora do intervalo em sequência (sinal de mudança de regime).
-
----
-
 ## Arquivos
 
 - `enbpi/core.py` — EnbPI (treino, OOB, quantis, janela).  
@@ -157,4 +133,3 @@ model = EnbPIModel(base, B=30, alpha=0.1,
 ## Referências
 - Xu, C. & Xie, Y. (2021). *Conformal Prediction Interval for Dynamic Time‑Series*. ICML.  
 - Xu, Chen, and Yao Xie. "Conformal prediction for time series." IEEE transactions on pattern analysis and machine intelligence 45.10 (2023): 11575-11587. 
-
