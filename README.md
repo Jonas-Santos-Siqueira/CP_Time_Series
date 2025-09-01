@@ -117,7 +117,7 @@ res = model.get_prediction(X_test, y_true=y_test)
 print(res.summary())
 ```
 
-**Por que isso é “VAR puro”?** Cada réplica bootstrap re‑estima um `VAR(p)` do `statsmodels` em uma **série contígua por blocos** de `Y_train` (o adaptador adiciona `p` observações no início de cada bloco para garantir os lags). As predições 1‑passo usam os **coeficientes do VAR** (intercepto + \(A_i\)).
+**Por que isso é “VAR**? Cada réplica bootstrap re‑estima um `VAR(p)` do `statsmodels` em uma **série contígua por blocos** de `Y_train` (o adaptador adiciona `p` observações no início de cada bloco para garantir os lags). As predições 1‑passo usam os **coeficientes do VAR** (intercepto + $$A_i$$).
 
 ---
 
