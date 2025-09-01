@@ -1,6 +1,6 @@
 # EnbPI (Python)
 
-**Ensemble Bootstrap Prediction Intervals** (EnbPI) for **time‑series regression**, com API no estilo `statsmodels` e suporte a **Moving Block Bootstrap (MBB)** e **VAR do `statsmodels` via adaptador.
+**Ensemble Bootstrap Prediction Intervals** (EnbPI) for **time‑series regression**, com API no estilo `statsmodels` e suporte a **Moving Block Bootstrap (MBB)** e **VAR** do `statsmodels` via adaptador.
 
 O método constrói **intervalos de predição conformais** livres de distribuição, usando um **ensemble bootstrap** de modelos base e **resíduos OOB (leave‑one‑out)** para calibrar os quantis. Em tempo de predição, os intervalos podem ser **atualizados sequencialmente** (janela deslizante) sem re‑treinar os modelos base.
 
