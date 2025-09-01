@@ -156,5 +156,5 @@ model = EnbPIModel(base, B=30, alpha=0.1,
 
 ## Referências
 - Xu, C. & Xie, Y. (2021). *Conformal Prediction Interval for Dynamic Time‑Series*. ICML.  
-- Xu, C. & Xie, Y. (2023). *Conformal prediction for time series – with proofs*.  
+- Xu, Chen, and Yao Xie. "Conformal prediction for time series." IEEE transactions on pattern analysis and machine intelligence 45.10 (2023): 11575-11587. 
 
