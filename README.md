@@ -14,7 +14,7 @@ Para uma série alvo $$y_t$$ com regressoras $$x_t$$:
 2. Para cada $$i$$ no treino, agregamos as predições **dos modelos que não usaram $$i$$** (OOB) e computamos o **resíduo não‑conforme** \(\hat\varepsilon_i = \lvert y_i - \hat f_{-i}(x_i)\rvert\).
 3. Para um novo ponto $$x_t$$, definimos o **centro** do intervalo como:
    - $$\hat f^{\phi}(x_t)$$ (agregação `mean`/`median`) ou
-   - o **quantil $$(1-\alpha)$$** das predições leave‑one‑out $$\{\hat f_{-i}(x_t)\}_{i=1}^T$$ (`center="loo_quantile"`).
+   - o **quantil $$(1-\alpha)$$** das predições leave‑one‑out $${\hat f_{-i}(x_t)\}_{i=1}^T$$ (`center="loo_quantile"`).
 4. A meia‑largura $$w_t$$ é o **quantil $$(1-\alpha)$$** dos resíduos atuais (com **janela deslizante** opcional).  
 5. Intervalo: $$[\,\text{centro} \pm w_t\,]$$.
 
