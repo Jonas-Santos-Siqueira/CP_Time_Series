@@ -1,4 +1,4 @@
-# EnbPI (Python)
+# **Intervalos de Predição via Bootstrap em Ensemble** - EnbPI (Python)
 
 **Ensemble Bootstrap Prediction Intervals** (EnbPI) for **time‑series regression**, com API no estilo `statsmodels` e suporte a **Moving Block Bootstrap (MBB)** e **VAR** do `statsmodels` via adaptador.
 
