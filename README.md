@@ -33,7 +33,7 @@ from enbpi import EnbPIModel
 - `enbpi/core.py` — **EnbPIModel / EnbPIResults** (núcleo do método, janela deslizante, OOB, quantis).
 - `enbpi/bootstrap.py` — **Moving Block Bootstrap** (`moving_block_bootstrap_indices`).
 - `enbpi/wrappers.py` — **Wrappers**:
-  - `StatsmodelsVARAdapter` — usa **VAR(p)** do `statsmodels` de forma **contígua por blocos** (VAR “puro”).
+  - `StatsmodelsVARAdapter` — usa **VAR(p)** do `statsmodels` de forma **contígua por blocos** (VAR).
   - `StatsmodelsOLSRegressor` — OLS do `statsmodels` com API “sklearn‑like”.
 - `enbpi/__init__.py` — exports.
 
@@ -75,7 +75,7 @@ print(res.summary())
 
 ## Opção A — **VAR (statsmodels) + EnbPI com **Moving Block Bootstrap** ✅
 
-Use o adaptador **`StatsmodelsVARAdapter`** para plugar um `VAR(p)` “de verdade” no EnbPI.  
+Use o adaptador **`StatsmodelsVARAdapter`** para plugar um `VAR(p)` no EnbPI.  
 O adaptador recebe a série **contígua** `Y_full` (treino), a ordem `p` e `target_idx` (qual variável prever).  
 A cada membro do ensemble, o EnbPI passa **índices de bootstrap por blocos sobre as linhas de X**; o adaptador os converte em blocos contíguos de **Y**, re‑estima o **VAR(p)** e prevê **1 passo** para o alvo.
 
