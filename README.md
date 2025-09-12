@@ -1,45 +1,28 @@
 # **Intervalos de Predição via Bootstrap em Ensemble** - (EnbPI)
 
-**Ensemble Bootstrap Prediction Intervals** (EnbPI) for **time‑series regression**, com API no estilo `statsmodels` e suporte a **Moving Block Bootstrap (MBB)** e **VAR** do `statsmodels` via adaptador.
-
-O método constrói **intervalos de predição conformais** livres de distribuição, usando um **ensemble bootstrap** de modelos base e **resíduos OOB (leave‑one‑out)** para calibrar os quantis. Em tempo de predição, os intervalos podem ser **atualizados sequencialmente** (janela deslizante) sem re‑treinar os modelos base.
+**Ensemble Bootstrap Prediction Intervals** (EnbPI) para **regressão em séries temporais**, com API no estilo `statsmodels` e suporte a **Moving Block Bootstrap (MBB)**.  
+O método constrói **intervalos de predição conformais** (livres de distribuição) a partir de um **ensemble bootstrap** e **resíduos OOB (leave‑one‑out)**. Em predição, os intervalos podem ser **atualizados sequencialmente** via **janela deslizante** sem re‑treinar o ensemble.
 
 ---
 
 ## Como funciona (resumo)
 
-Para uma série alvo $$y_t$$ com regressoras $$x_t$$:
+Para uma série alvo \(y_t\) com regressoras \(x_t\):
 
-1. Treinamos $$B$$ modelos em **amostras bootstrap** do conjunto de treino (i.i.d. ou por **blocos contíguos** para séries temporais).
-2. Para cada $$i$$ no treino, agregamos as predições **dos modelos que não usaram $$i$$** (OOB) e computamos o **resíduo não‑conforme** $$\hat\varepsilon_i = \lvert y_i - \hat f_{-i}(x_i)\rvert$$.
-3. Para um novo ponto $$x_t$$, definimos o **centro** do intervalo como:
-   - $$\hat f^{\phi}(x_t)$$ (agregação `mean`/`median`) ou
-   - o **quantil $$(1-\alpha)$$** das predições leave‑one‑out $${\hat f_{-i}(x_t)\}_{i=1}^T$$ (`center="loo_quantile"`).
-4. A meia‑largura $$w_t$$ é o **quantil $$(1-\alpha)$$** dos resíduos atuais (com **janela deslizante** opcional).  
-5. Intervalo: $$[\,\text{centro} \pm w_t\,]$$.
-
----
-
-## Instalação / Uso
-
-1) Baixe e descompacte esta pasta para um local do seu `PYTHONPATH` (ou adicione o caminho via `sys.path.append`).  
-2) Importe:
-```python
-from enbpi import EnbPIModel
-```
-
-### Arquivos principais
-
-- `enbpi/core.py` — **EnbPIModel / EnbPIResults** (núcleo do método, janela deslizante, OOB, quantis).
-- `enbpi/bootstrap.py` — **Moving Block Bootstrap** (`moving_block_bootstrap_indices`).
-- `enbpi/wrappers.py` — **Wrappers**:
-  - `StatsmodelsVARAdapter` — usa **VAR(p)** do `statsmodels` de forma **contígua por blocos** (VAR).
-  - `StatsmodelsOLSRegressor` — OLS do `statsmodels` com API “sklearn‑like”.
-- `enbpi/__init__.py` — exports.
+1. Treine \(B\) modelos-base em **amostras bootstrap** do treino (i.i.d. ou **blocos contíguos** para séries temporais).
+2. Para cada \(i\) no treino, agregue as predições **dos modelos que não viram \(i\)** (OOB) e calcule o **resíduo não‑conforme** \(\hat\varepsilon_i = |y_i - \hat f_{-i}(x_i)|\).
+3. Para um novo \(x_t\), o **centro** do intervalo é:
+   - \(\hat f^{\phi}(x_t)\) (agregação `mean`/`median`), ou
+   - o **quantil \((1-\alpha)\)** das predições leave‑one‑out \(\{\hat f_{-i}(x_t)\}_{i=1}^T\) (`center="loo_quantile"`).
+4. A **meia‑largura** \(w_t\) é o **quantil \((1-\alpha)\)** dos resíduos atuais (com **janela deslizante** opcional).  
+5. Intervalo: \([\,\text{centro} \pm w_t\,]\).
 
 ---
 
-## Quick start (qualquer regressor)
+## Instalação / Uso rápido
+
+1) Baixe o pacote e adicione a pasta ao `PYTHONPATH` (ou `sys.path.append`).  
+2) Importe e use:
 
 ```python
 import numpy as np
@@ -73,60 +56,62 @@ print(res.summary())
 
 ---
 
-## VAR (statsmodels) + EnbPI com **Moving Block Bootstrap** ✅
+## Multi‑passos à frente (H‑step)
 
-Use o adaptador **`StatsmodelsVARAdapter`** para plugar um `VAR(p)` no EnbPI.  
-O adaptador recebe a série **contígua** `Y_full` (treino), a ordem `p` e `target_idx` (qual variável prever).  
-A cada membro do ensemble, o EnbPI passa **índices de bootstrap por blocos sobre as linhas de X**; o adaptador os converte em blocos contíguos de **Y**, re‑estima o **VAR(p)** e prevê **1 passo** para o alvo.
+O EnbPI não se limita a 1‑passo. Para \(H\) passos (ex.: 6):
 
-```python
-import numpy as np
-from enbpi import EnbPIModel, StatsmodelsVARAdapter
-
-# --- Y_train: (T x k) contíguo; construa X lagged e y (alvo) para target_idx ---
-def build_lagged(Y, p, target_idx):
-    n, k = Y.shape
-    X, y = [], []
-    for t in range(p, n):
-        lags = [Y[t - lag] for lag in range(1, p+1)]
-        X.append(np.concatenate(lags, axis=0))
-        y.append(Y[t, target_idx])
-    return np.asarray(X), np.asarray(y)
-
-p = 2
-target_idx = 0
-
-# Suponha que você já tenha Y_train e Y_test_full (inclui p lags antes do 1º test)
-X_train, y_train = build_lagged(Y_train, p, target_idx)
-X_test,  y_test  = build_lagged(Y_test_full, p, target_idx)
-
-base = StatsmodelsVARAdapter(Y_full=Y_train, p=p, target_idx=target_idx, trend='c')
-
-model = EnbPIModel(
-    base_model=base,
-    B=40, alpha=0.1,
-    aggregation="mean",
-    center="loo_quantile",
-    bootstrap="block",     # MBB contíguo
-    block_length=25,       # ajuste conforme a dependência temporal
-    batch_size=1,
-    random_state=123,
-)
-model.fit(X_train, y_train)
-res = model.get_prediction(X_test, y_true=y_test)
-print(res.summary())
-```
-
-**Por que isso é “VAR**? Cada réplica bootstrap re‑estima um `VAR(p)` do `statsmodels` em uma **série contígua por blocos** de `Y_train` (o adaptador adiciona `p` observações no início de cada bloco para garantir os lags). As predições 1‑passo usam os **coeficientes do VAR** (intercepto + $$A_i$$).
+- **Direto por horizonte (recomendado):** treine **um modelo por horizonte** \(h=1,\dots,H\) com alvo \(y_{t+h}\) e features em \(t\). Cada modelo possui seus próprios resíduos OOB/quantis.
+- **Recursivo:** aplique o mesmo modelo de 1‑passo \(H\) vezes alimentando predições como lags (mais simples, porém acumula erro).  
+- **Cobertura simultânea:** se desejar \(1-\alpha\) simultâneo em \(H\) pontos, ajuste o nível por passo (ex.: Bonferroni \(\alpha'=\alpha/H\) ou Sidák \(\alpha'=1-(1-\alpha)^{1/H}\)).
 
 ---
 
-## Arquivos
+## Parâmetros importantes
 
-- `enbpi/core.py` — EnbPI (treino, OOB, quantis, janela).  
-- `enbpi/bootstrap.py` — MBB (índices por blocos contíguos).  
-- `enbpi/wrappers.py` — `StatsmodelsVARAdapter`, `StatsmodelsOLSRegressor`.  
+- **`B`** (nº de modelos): 20–50 costuma funcionar bem.  
+- **`bootstrap`**: `iid` (amostragem por linhas) ou `block` (MBB por blocos contíguos).  
+- **`block_length`**: tamanho do bloco no MBB (10–50 típico; ajuste pela dependência temporal).  
+- **`aggregation`**: `mean` ou `median` nas agregações do ensemble.  
+- **`center`**: `phi` (agregação pontual) ou `loo_quantile` (quantil das predições leave‑one‑out).  
+- **`window_size`**: comprimento da janela deslizante dos resíduos (menor = mais reativo).  
+- **`batch_size`**: frequência de atualização sequencial dos resíduos quando `y_true` é fornecido em `get_prediction`.
+
+---
+
+## API (essencial)
+
+```python
+from enbpi import EnbPIModel
+
+m = EnbPIModel(base_model, B=30, alpha=0.1,
+               aggregation="mean", center="loo_quantile",
+               bootstrap="block", block_length=25,
+               batch_size=1, window_size=None, random_state=123)
+
+m.fit(X_train, y_train)
+
+# Sem feedback (produção): usa resíduos já calibrados
+res = m.get_prediction(X_future, y_true=None)
+
+# Com feedback (val/teste): atualiza janela a cada batch
+res = m.get_prediction(X_test, y_true=y_test)
+
+# Acesso aos resultados
+res.lower_bounds, res.upper_bounds, res.point_predictions
+print(res.summary())
+# res.plot_interval(show=True)
+```
+
+---
+
+## Organização do código
+
+- `enbpi/core.py` — **EnbPIModel / EnbPIResults** (OOB, quantis, janela deslizante, predição).  
+- `enbpi/bootstrap.py` — **Moving Block Bootstrap** (`moving_block_bootstrap_indices`).  
+- `enbpi/base.py` — classes base para API ao estilo `statsmodels`.  
 - `enbpi/__init__.py` — exports.
+
+> Observação: o modelo base deve expor `.fit(X, y)` e `.predict(X_new)`. Se também expuser `fit_with_indices(idx)`, o EnbPI repassará os índices de bootstrap (útil para estimadores que exigem contiguidade).
 
 ---
 
