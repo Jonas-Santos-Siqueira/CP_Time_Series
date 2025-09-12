@@ -7,15 +7,15 @@ O método constrói **intervalos de predição conformais** (livres de distribui
 
 ## Como funciona (resumo)
 
-Para uma série alvo \(y_t\) com regressoras \(x_t\):
+Para uma série alvo $$y_t$$ com regressoras $$x_t$$:
 
-1. Treine \(B\) modelos-base em **amostras bootstrap** do treino (i.i.d. ou **blocos contíguos** para séries temporais).
-2. Para cada \(i\) no treino, agregue as predições **dos modelos que não viram \(i\)** (OOB) e calcule o **resíduo não‑conforme** \(\hat\varepsilon_i = |y_i - \hat f_{-i}(x_i)|\).
-3. Para um novo \(x_t\), o **centro** do intervalo é:
-   - \(\hat f^{\phi}(x_t)\) (agregação `mean`/`median`), ou
-   - o **quantil \((1-\alpha)\)** das predições leave‑one‑out \(\{\hat f_{-i}(x_t)\}_{i=1}^T\) (`center="loo_quantile"`).
-4. A **meia‑largura** \(w_t\) é o **quantil \((1-\alpha)\)** dos resíduos atuais (com **janela deslizante** opcional).  
-5. Intervalo: \([\,\text{centro} \pm w_t\,]\).
+1. Treine $$B$$ modelos-base em **amostras bootstrap** do treino (i.i.d. ou **blocos contíguos** para séries temporais).
+2. Para cada $$i$$ no treino, agregue as predições **dos modelos que não viram $$i$$** (OOB) e calcule o **resíduo não‑conforme** $$\hat\varepsilon_i = |y_i - \hat f_{-i}(x_i)|$$.
+3. Para um novo $$x_t$$, o **centro** do intervalo é:
+   - $$\hat f^{\phi}(x_t)$$ (agregação `mean`/`median`), ou
+   - o **quantil $$(1-\alpha)$$** das predições leave‑one‑out $$\{\hat f_{-i}(x_t)\}_{i=1}^T$$ (`center="loo_quantile"`).
+4. A **meia‑largura** $$w_t$$ é o **quantil $$(1-\alpha)$$** dos resíduos atuais (com **janela deslizante** opcional).  
+5. Intervalo: $$[\,\text{centro} \pm w_t\,]$$.
 
 ---
 
@@ -58,11 +58,11 @@ print(res.summary())
 
 ## Multi‑passos à frente (H‑step)
 
-O EnbPI não se limita a 1‑passo. Para \(H\) passos (ex.: 6):
+O EnbPI não se limita a 1‑passo. Para $$H$$ passos (ex.: 6):
 
-- **Direto por horizonte (recomendado):** treine **um modelo por horizonte** \(h=1,\dots,H\) com alvo \(y_{t+h}\) e features em \(t\). Cada modelo possui seus próprios resíduos OOB/quantis.
-- **Recursivo:** aplique o mesmo modelo de 1‑passo \(H\) vezes alimentando predições como lags (mais simples, porém acumula erro).  
-- **Cobertura simultânea:** se desejar \(1-\alpha\) simultâneo em \(H\) pontos, ajuste o nível por passo (ex.: Bonferroni \(\alpha'=\alpha/H\) ou Sidák \(\alpha'=1-(1-\alpha)^{1/H}\)).
+- **Direto por horizonte (recomendado):** treine **um modelo por horizonte** $$h=1,\dots,H$$ com alvo $$y_{t+h}$$ e features em $$t$$. Cada modelo possui seus próprios resíduos OOB/quantis.
+- **Recursivo:** aplique o mesmo modelo de 1‑passo $$H$$ vezes alimentando predições como lags (mais simples, porém acumula erro).  
+- **Cobertura simultânea:** se desejar $$1-\alpha$$ simultâneo em $$H$$ pontos, ajuste o nível por passo (ex.: Bonferroni $$\alpha'=\alpha/H$$ ou Sidák $$\alpha'=1-(1-\alpha)^{1/H}$$).
 
 ---
 
